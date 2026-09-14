@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { requireChatGPTUser } from '@/app/chatgpt-auth';
 import { AdminProjectForm } from './project-form';
 
-const OWNER_USER_ID = 'f4e7052e-2a2b-481f-8063-8da67caa6931';
+const OWNER_EMAIL = 'muhammadnaurezkhan@gmail.com';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +14,7 @@ export default async function AdminPage() {
 
   if (!isLocal) {
     const user = await requireChatGPTUser('/admin.html');
-    if (user.userId !== OWNER_USER_ID) notFound();
+    if (user.email.toLowerCase() !== OWNER_EMAIL) notFound();
   }
 
   return <AdminProjectForm />;

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getChatGPTUser } from '@/app/chatgpt-auth';
 import { getBindings, listStoredProjects } from '@/lib/projects';
 
-const OWNER_USER_ID = 'f4e7052e-2a2b-481f-8063-8da67caa6931';
+const OWNER_EMAIL = 'muhammadnaurezkhan@gmail.com';
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
@@ -14,7 +14,7 @@ function isLocalRequest(request: Request) {
 async function isOwner(request: Request) {
   if (isLocalRequest(request)) return true;
   const user = await getChatGPTUser();
-  return user?.userId === OWNER_USER_ID;
+  return user?.email.toLowerCase() === OWNER_EMAIL;
 }
 
 export async function GET() {
