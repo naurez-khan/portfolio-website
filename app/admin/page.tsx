@@ -13,7 +13,7 @@ export default async function AdminPage() {
   const isLocal = host.startsWith('localhost') || host.startsWith('127.0.0.1');
 
   if (!isLocal) {
-    const user = await requireChatGPTUser('/admin');
+    const user = await requireChatGPTUser('/admin.html');
     if (user.userId !== OWNER_USER_ID) notFound();
   }
 
