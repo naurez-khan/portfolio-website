@@ -6,6 +6,7 @@ import {
   Braces,
   BrainCircuit,
   Code2,
+  CheckCircle2,
   Download,
   GraduationCap,
   Layers3,
@@ -20,44 +21,48 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 
-const featuredProjects = [
-  { title: 'Personal Portfolio', category: 'Web', year: '2026', text: 'A responsive home for my work, background, and growing set of skills.', tags: ['Next.js', 'TypeScript', 'UI'], image: '/portfolio-preview.png', imageAlt: 'Muhammad Naurez Khan portfolio website' },
-  { title: 'Math Department Website', category: 'Web', year: '2026', text: 'A responsive department website for presenting academic information and useful resources clearly.', tags: ['HTML', 'CSS', 'JavaScript'], image: '/math-department-preview.png', imageAlt: 'Department of Mathematics website' },
-  { title: 'Blog Website', category: 'Web', year: '2026', text: 'A personal blog for sharing ideas, lessons, and notes in progress.', tags: ['HTML', 'CSS', 'JavaScript'], image: '/blog-preview.png', imageAlt: 'Muhammad Naurez Khan blog website' },
-];
-
 type StoredProject = {
   id: number;
   title: string;
   description: string;
   imageUrl: string;
   imageAlt: string;
+  category: string;
+  year: number;
+  technologies: string[];
+  demoUrl: string | null;
+  githubUrl: string | null;
+  problem: string;
+  role: string;
+  result: string;
 };
 
 export function PortfolioShell() {
   const [storedProjects, setStoredProjects] = useState<StoredProject[]>([]);
+  const [contactState, setContactState] = useState<{ type:'idle'|'sending'|'success'|'error'; message:string }>({ type:'idle', message:'' });
 
   useEffect(() => {
     let cancelled = false;
     fetch('/api/projects')
-      .then((response) => response.ok ? response.json() : Promise.reject())
-      .then((data: { projects: StoredProject[] }) => {
+      .then(async (response): Promise<{ projects: StoredProject[] }> => response.ok ? response.json() : Promise.reject())
+      .then((data) => {
         if (!cancelled) setStoredProjects(data.projects);
       })
       .catch(() => undefined);
     return () => { cancelled = true; };
   }, []);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setContactState({ type:'sending', message:'' });
+    const form = event.currentTarget;
     const formData = new FormData(event.currentTarget);
-    const name = String(formData.get('name') ?? '');
-    const email = String(formData.get('email') ?? '');
-    const subject = String(formData.get('subject') ?? 'Portfolio enquiry');
-    const message = String(formData.get('message') ?? '');
-    const body = `Name: ${name}\nEmail: ${email}\n\n${message}`;
-
-    window.location.href = `mailto:dev.naurez@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    try {
+      const response = await fetch('/api/contact', { method:'POST', headers:{ 'content-type':'application/json' }, body:JSON.stringify(Object.fromEntries(formData)) });
+      const data = (await response.json()) as { message?:string };
+      if (!response.ok) throw new Error(data.message ?? 'Your message could not be sent.');
+      form.reset(); setContactState({ type:'success', message:data.message ?? 'Thanks — your message has been sent.' });
+    } catch (error) { setContactState({ type:'error', message:error instanceof Error ? error.message : 'Your message could not be sent.' }); }
   }
 
   return (
@@ -68,7 +73,7 @@ export function PortfolioShell() {
       <div className="portfolio-shell">
         <aside className="profile-sidebar">
           <div className="avatar-wrap">
-            <img src="/naurez.jpg" alt="Muhammad Naurez Khan" width="3000" height="4000" />
+            <img src="/naurez.webp" alt="Muhammad Naurez Khan" width="600" height="800" />
           </div>
           <h1>Muhammad<br />Naurez Khan</h1>
           <p className="role">Artificial Intelligence student</p>
@@ -81,7 +86,7 @@ export function PortfolioShell() {
 
           <div className="social-row" aria-label="Contact and social links">
             <a href="https://github.com/naurez-khan" target="_blank" rel="noreferrer" title="GitHub profile" aria-label="Open Muhammad's GitHub profile"><Code2 size={17} /></a>
-            <button type="button" title="Add LinkedIn link" aria-label="LinkedIn link not added"><ArrowUpRight size={17} /></button>
+            <a href="https://www.linkedin.com/in/muhammad-naurez-khan-40723b40b/" target="_blank" rel="noreferrer" title="LinkedIn profile" aria-label="Open Muhammad's LinkedIn profile"><ArrowUpRight size={17} /></a>
             <a href="mailto:dev.naurez@gmail.com" title="Email Muhammad" aria-label="Email Muhammad"><Mail size={17} /></a>
           </div>
         </aside>
@@ -131,21 +136,18 @@ export function PortfolioShell() {
                 <TimelineItem year="2026" title="Blog Website">Created a personal blog to document ideas and lessons in progress.</TimelineItem>
                 <TimelineItem year="2026" title="Math Department Attendance Portal">Built a department portal for managing attendance and supporting academic workflows.</TimelineItem>
               </div>
-              <Button type="button" variant="outline" className="cv-button" disabled><Download size={16} /> CV file not added</Button>
+              <a className="cv-button" href="/naurez-cv.pdf" download><Download size={16} /> Download CV</a>
             </TabsContent>
 
             <TabsContent value="portfolio" className="tab-content">
               <SectionTitle>Portfolio</SectionTitle>
               <div className="portfolio-grid">
-                {[
-                  ...storedProjects.map((project) => ({ title: project.title, category: 'Project', year: new Date().getFullYear().toString(), text: project.description, tags: [] as string[], image: project.imageUrl, imageAlt: project.imageAlt, key: `stored-${project.id}` })),
-                  ...featuredProjects.map((project) => ({ ...project, key: `featured-${project.title}` })),
-                ].map((project, index) => (
-                  <article className="portfolio-card" key={project.key}>
-                    {project.image ? (
+                {storedProjects.map((project, index) => (
+                  <article className="portfolio-card" key={project.id}>
+                    {project.imageUrl ? (
                       <div className="project-preview project-image-wrap">
 
-                        <img className={project.image.includes('math-department') ? 'logo-preview' : undefined} src={project.image} alt={project.imageAlt} />
+                        <img className={project.imageUrl.includes('math-department') ? 'logo-preview' : undefined} src={project.imageUrl} alt={project.imageAlt} loading="lazy" />
                       </div>
                     ) : (
                       <div className={`project-preview preview-${index % 2}`} aria-hidden="true">
@@ -153,7 +155,15 @@ export function PortfolioShell() {
                         <div className="window-content"><small>MNK / {project.category}</small><strong>{project.title}</strong><span /><span /></div>
                       </div>
                     )}
-                    <div className="project-info"><p>{project.category} · {project.year}</p><h3>{project.title}</h3><span>{project.text}</span><ul>{project.tags.map((tag) => <li key={tag}>{tag}</li>)}</ul></div>
+                    <div className="project-info">
+                      <p>{project.category} · {project.year}</p><h3>{project.title}</h3>
+                      <dl className="project-story"><div><dt>Problem</dt><dd>{project.problem}</dd></div><div><dt>Built</dt><dd>{project.description}</dd></div><div><dt>Role</dt><dd>{project.role}</dd></div><div><dt>Result</dt><dd>{project.result}</dd></div></dl>
+                      <ul>{project.technologies.map((tag) => <li key={tag}>{tag}</li>)}</ul>
+                      <div className="project-links">
+                        {project.demoUrl ? <a href={project.demoUrl} target={project.demoUrl === '/' ? undefined : '_blank'} rel="noreferrer"><ArrowUpRight size={15}/> Live Demo</a> : <span aria-disabled="true"><ArrowUpRight size={15}/> Demo unavailable</span>}
+                        {project.githubUrl ? <a href={project.githubUrl} target="_blank" rel="noreferrer"><Code2 size={15}/> GitHub</a> : <span aria-disabled="true"><Code2 size={15}/> GitHub unavailable</span>}
+                      </div>
+                    </div>
                   </article>
                 ))}
               </div>
@@ -167,7 +177,10 @@ export function PortfolioShell() {
                   <div className="form-row"><Input required name="name" aria-label="Full name" placeholder="Full name" /><Input required name="email" type="email" aria-label="Email address" placeholder="Email address" /></div>
                   <Input required name="subject" aria-label="Subject" placeholder="Subject" />
                   <Textarea required name="message" aria-label="Message" placeholder="Your message" rows={6} />
-                  <Button type="submit" className="send-button"><Send size={16} /> Send message</Button>
+                  <Input className="contact-honeypot" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+                  <Button type="submit" className="send-button" disabled={contactState.type === 'sending'}><Send size={16} /> {contactState.type === 'sending' ? 'Sending…' : 'Send message'}</Button>
+                  {contactState.type === 'success' && <p className="contact-status success" role="status"><CheckCircle2 size={18}/> {contactState.message}</p>}
+                  {contactState.type === 'error' && <p className="contact-status error" role="alert">{contactState.message}</p>}
                 </form>
               </div>
             </TabsContent>

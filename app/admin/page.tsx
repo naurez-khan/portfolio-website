@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { requireChatGPTUser } from '@/app/chatgpt-auth';
 import { AdminProjectForm } from './project-form';
+import { getBindings, listStoredProjects } from '@/lib/projects';
 
 const OWNER_EMAIL = 'muhammadnaurezkhan@gmail.com';
 
@@ -17,5 +18,10 @@ export default async function AdminPage() {
     if (user.email.toLowerCase() !== OWNER_EMAIL) notFound();
   }
 
-  return <AdminProjectForm />;
+  const [initialProjects, messageResult] = await Promise.all([
+    listStoredProjects(),
+    getBindings().db.prepare('SELECT id, name, email, subject, message, created_at FROM contact_messages ORDER BY created_at DESC LIMIT 50').all(),
+  ]);
+
+  return <AdminProjectForm initialProjects={initialProjects} initialMessages={messageResult.results as never[]} />;
 }
