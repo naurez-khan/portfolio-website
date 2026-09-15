@@ -12,9 +12,11 @@ import {
   Layers3,
   Mail,
   MapPin,
+  Moon,
   Palette,
   Send,
   Sparkles,
+  Sun,
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -40,7 +42,17 @@ type StoredProject = {
 export function PortfolioShell() {
   const [storedProjects, setStoredProjects] = useState<StoredProject[]>([]);
   const [activeTab, setActiveTab] = useState('about');
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [contactState, setContactState] = useState<{ type:'idle'|'sending'|'success'|'error'; message:string }>({ type:'idle', message:'' });
+
+  useEffect(() => {
+    let savedTheme: string | null = null;
+    try { savedTheme = localStorage.getItem('portfolio-theme'); } catch { /* Storage may be unavailable in private browsing. */ }
+    const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const nextTheme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : preferredTheme;
+    document.documentElement.classList.toggle('dark', nextTheme === 'dark');
+    setTheme(nextTheme);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -84,8 +96,18 @@ export function PortfolioShell() {
     } catch (error) { setContactState({ type:'error', message:error instanceof Error ? error.message : 'Your message could not be sent.' }); }
   }
 
+  function toggleTheme() {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    const root = document.documentElement;
+    setTheme(nextTheme);
+    root.classList.add('theme-switching');
+    root.classList.toggle('dark', nextTheme === 'dark');
+    try { localStorage.setItem('portfolio-theme', nextTheme); } catch { /* The toggle still works without persistence. */ }
+    window.setTimeout(() => root.classList.remove('theme-switching'), 650);
+  }
+
   return (
-    <main className="portfolio-page">
+    <main className="portfolio-page" data-theme={theme}>
       <a className="skip-link" href="#portfolio-content">Skip to content</a>
       <div className="confetti dot-a" /><div className="confetti dot-b" /><div className="confetti dot-c" />
 
@@ -107,6 +129,9 @@ export function PortfolioShell() {
             <a href="https://github.com/naurez-khan" target="_blank" rel="noreferrer" title="GitHub profile" aria-label="Open Muhammad's GitHub profile"><Code2 size={17} /></a>
             <a href="https://www.linkedin.com/in/muhammad-naurez-khan-40723b40b/" target="_blank" rel="noreferrer" title="LinkedIn profile" aria-label="Open Muhammad's LinkedIn profile"><ArrowUpRight size={17} /></a>
             <a href="mailto:dev.naurez@gmail.com" title="Email Muhammad" aria-label="Email Muhammad"><Mail size={17} /></a>
+            <button className="theme-toggle" type="button" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`} aria-pressed={theme === 'dark'} title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+              <Sun className="theme-sun" size={17} /><Moon className="theme-moon" size={17} />
+            </button>
           </div>
         </aside>
 
