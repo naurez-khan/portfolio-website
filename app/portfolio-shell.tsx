@@ -52,6 +52,24 @@ export function PortfolioShell() {
     return () => { cancelled = true; };
   }, []);
 
+  useEffect(() => {
+    const elements = Array.from(document.querySelectorAll<HTMLElement>('.reveal-on-scroll'));
+    if (!('IntersectionObserver' in window)) {
+      elements.forEach((element) => element.classList.add('is-visible'));
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.14, rootMargin: '0px 0px -36px' });
+    elements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [storedProjects]);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setContactState({ type:'sending', message:'' });
@@ -124,13 +142,13 @@ export function PortfolioShell() {
             <TabsContent value="resume" className="tab-content">
               <SectionTitle>Resume</SectionTitle>
               <TimelineTitle icon={GraduationCap}>Education</TimelineTitle>
-              <div className="timeline">
+              <div className="timeline reveal-on-scroll motion-timeline">
                 <TimelineItem year="Completed" title="Intermediate in Computer Science">Foundational study in computing, mathematics, and problem solving.</TimelineItem>
                 <TimelineItem year="Current" title="Bachelor’s in Artificial Intelligence">Developing a deeper understanding of intelligent systems and computer science.</TimelineItem>
               </div>
 
               <TimelineTitle icon={Sparkles}>Experience &amp; Growth</TimelineTitle>
-              <div className="timeline">
+              <div className="timeline reveal-on-scroll motion-timeline">
                 <TimelineItem year="Ongoing" title="Learning Web Development">Building practical projects with HTML, CSS, JavaScript, and modern web tools.</TimelineItem>
                 <TimelineItem year="2026" title="Personal Portfolio">Designed and developed this portfolio as a responsive, evolving record of my work.</TimelineItem>
                 <TimelineItem year="2026" title="Blog Website">Created a personal blog to document ideas and lessons in progress.</TimelineItem>
@@ -143,7 +161,7 @@ export function PortfolioShell() {
               <SectionTitle>Portfolio</SectionTitle>
               <div className="portfolio-grid">
                 {storedProjects.map((project, index) => (
-                  <article className="portfolio-card" key={project.id}>
+                  <article className="portfolio-card reveal-on-scroll" key={project.id}>
                     {project.imageUrl ? (
                       <div className="project-preview project-image-wrap">
 
