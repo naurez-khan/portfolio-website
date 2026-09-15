@@ -42,14 +42,13 @@ type StoredProject = {
 export function PortfolioShell() {
   const [storedProjects, setStoredProjects] = useState<StoredProject[]>([]);
   const [activeTab, setActiveTab] = useState('about');
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [contactState, setContactState] = useState<{ type:'idle'|'sending'|'success'|'error'; message:string }>({ type:'idle', message:'' });
 
   useEffect(() => {
     let savedTheme: string | null = null;
     try { savedTheme = localStorage.getItem('portfolio-theme'); } catch { /* Storage may be unavailable in private browsing. */ }
-    const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const nextTheme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : preferredTheme;
+    const nextTheme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'dark';
     document.documentElement.classList.toggle('dark', nextTheme === 'dark');
     setTheme(nextTheme);
   }, []);
