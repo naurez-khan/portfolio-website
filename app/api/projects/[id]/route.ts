@@ -3,7 +3,7 @@ import { getBindings } from '@/lib/projects';
 import { isOwner, readProjectFields, saveImage, validateProject } from '../route';
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!(await isOwner(request))) return NextResponse.json({ message: 'You do not have permission to edit projects.' }, { status: 403 });
+  if (!(await isOwner(request))) return NextResponse.json({ message: 'Not found.' }, { status: 404 });
   const id = Number((await params).id);
   if (!Number.isInteger(id)) return NextResponse.json({ message: 'Invalid project.' }, { status: 400 });
   let newImageKey: string | null = null;
@@ -34,7 +34,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 }
 
 export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  if (!(await isOwner(request))) return NextResponse.json({ message: 'You do not have permission to delete projects.' }, { status: 403 });
+  if (!(await isOwner(request))) return NextResponse.json({ message: 'Not found.' }, { status: 404 });
   const id = Number((await params).id);
   try {
     const { db, bucket } = getBindings();

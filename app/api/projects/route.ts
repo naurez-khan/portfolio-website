@@ -1,20 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { isAdminMutation } from '@/app/admin-auth';
 import { getBindings, listStoredProjects } from '@/lib/projects';
 
-export const OWNER_EMAIL = 'muhammadnaurezkhan@gmail.com';
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 
-export function isLocalRequest(request: Request) {
-  const hostname = new URL(request.url).hostname;
-  return hostname === 'localhost' || hostname === '127.0.0.1';
-}
-
 export async function isOwner(request: Request) {
-  if (isLocalRequest(request)) return true;
-  const user = await getChatGPTUser();
-  return user?.email.toLowerCase() === OWNER_EMAIL;
+  return isAdminMutation(request);
 }
 
 export function cleanUrl(value: FormDataEntryValue | null) {
@@ -75,7 +67,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!(await isOwner(request))) return NextResponse.json({ message: 'You do not have permission to add projects.' }, { status: 403 });
+  if (!(await isOwner(request))) return NextResponse.json({ message: 'Not found.' }, { status: 404 });
   let imageKey: string | null = null;
   try {
     const formData = await request.formData();

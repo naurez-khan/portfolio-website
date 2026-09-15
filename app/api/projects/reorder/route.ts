@@ -3,7 +3,7 @@ import { getBindings } from '@/lib/projects';
 import { isOwner } from '../route';
 
 export async function PATCH(request: Request) {
-  if (!(await isOwner(request))) return NextResponse.json({ message: 'You do not have permission to reorder projects.' }, { status: 403 });
+  if (!(await isOwner(request))) return NextResponse.json({ message: 'Not found.' }, { status: 404 });
   try {
     const body = await request.json() as { ids?: unknown[] };
     const ids = body.ids?.map(Number);
