@@ -39,6 +39,7 @@ type StoredProject = {
 
 export function PortfolioShell() {
   const [storedProjects, setStoredProjects] = useState<StoredProject[]>([]);
+  const [activeTab, setActiveTab] = useState('about');
   const [contactState, setContactState] = useState<{ type:'idle'|'sending'|'success'|'error'; message:string }>({ type:'idle', message:'' });
 
   useEffect(() => {
@@ -68,7 +69,7 @@ export function PortfolioShell() {
     }, { threshold: 0.14, rootMargin: '0px 0px -36px' });
     elements.forEach((element) => observer.observe(element));
     return () => observer.disconnect();
-  }, [storedProjects]);
+  }, [storedProjects, activeTab]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -110,7 +111,7 @@ export function PortfolioShell() {
         </aside>
 
         <section className="content-panel" id="portfolio-content">
-          <Tabs defaultValue="about" className="site-tabs">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="site-tabs">
             <TabsList className="tab-bar" aria-label="Portfolio sections">
               <TabsTrigger value="about">About</TabsTrigger>
               <TabsTrigger value="resume">Resume</TabsTrigger>
