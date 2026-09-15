@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { isAdminMutation } from '@/app/admin-auth';
-import { getBindings, listStoredProjects } from '@/lib/projects';
+import { listStoredProjects, saveProjectImage, saveStoredProjects } from '@/lib/projects';
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -49,13 +49,7 @@ export function validateProject(fields: ReturnType<typeof readProjectFields>, fo
 
 export async function saveImage(image: File) {
   if (!ALLOWED_IMAGE_TYPES.has(image.type) || image.size > MAX_IMAGE_SIZE) throw new Error('INVALID_IMAGE');
-  const { bucket } = getBindings();
-  const extension = image.type === 'image/jpeg' ? 'jpg' : image.type.split('/')[1];
-  const imageKey = `${crypto.randomUUID()}.${extension}`;
-  await bucket.put(imageKey, await image.arrayBuffer(), {
-    httpMetadata: { contentType: image.type }, customMetadata: { originalName: image.name.slice(0, 200) },
-  });
-  return imageKey;
+  return saveProjectImage(image);
 }
 
 export async function GET() {
@@ -68,7 +62,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   if (!(await isOwner(request))) return NextResponse.json({ message: 'Not found.' }, { status: 404 });
-  let imageKey: string | null = null;
+  let imageUrl: string | null = null;
   try {
     const formData = await request.formData();
     const fields = readProjectFields(formData);
@@ -76,19 +70,23 @@ export async function POST(request: Request) {
     if (validationError) return NextResponse.json({ message: validationError }, { status: 400 });
     const image = formData.get('image');
     if (!(image instanceof File) || image.size === 0) return NextResponse.json({ message: 'Choose an image for the project.' }, { status: 400 });
-    imageKey = await saveImage(image);
-    const { db } = getBindings();
-    const max = await db.prepare('SELECT COALESCE(MAX(position), -1) AS position FROM projects').first<{ position: number }>();
+    imageUrl = await saveImage(image);
+    const projects = await listStoredProjects();
     const now = Date.now();
-    await db.prepare(
-      `INSERT INTO projects (title, description, image_key, image_alt, category, year, technologies, demo_url, github_url, problem, role, result, position, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    ).bind(fields.title, fields.description, imageKey, `${fields.title} project preview`, fields.category, fields.year,
-      JSON.stringify(fields.technologies), fields.demoUrl, fields.githubUrl, fields.problem, fields.role, fields.result,
-      (max?.position ?? -1) + 1, now, now).run();
+    projects.push({
+      id: now, title: fields.title, description: fields.description, imageUrl, imageAlt: `${fields.title} project preview`,
+      category: fields.category, year: fields.year, technologies: fields.technologies, demoUrl: fields.demoUrl,
+      githubUrl: fields.githubUrl, problem: fields.problem, role: fields.role, result: fields.result,
+      position: projects.length, createdAt: now,
+    });
+    await saveStoredProjects(projects);
     return NextResponse.json({ message: 'Project published.' }, { status: 201 });
   } catch (error) {
-    if (imageKey) await getBindings().bucket.delete(imageKey);
+    if (imageUrl) {
+      const { deleteProjectImage } = await import('@/lib/projects');
+      await deleteProjectImage(imageUrl).catch(() => undefined);
+    }
+    if (error instanceof Error && error.message === 'PROJECT_STORAGE_NOT_CONFIGURED') return NextResponse.json({ message: 'Connect a Vercel Blob store before editing projects.' }, { status: 503 });
     if (error instanceof Error && error.message === 'INVALID_IMAGE') return NextResponse.json({ message: 'Use a JPG, PNG, WebP, or GIF image up to 5 MB.' }, { status: 400 });
     console.error('Unable to save project', error);
     return NextResponse.json({ message: 'The project could not be saved. Please try again.' }, { status: 500 });

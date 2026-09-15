@@ -9,12 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 type Project = { id:number; title:string; description:string; imageUrl:string; imageAlt:string; category:string; year:number; technologies:string[]; demoUrl:string|null; githubUrl:string|null; problem:string; role:string; result:string; position:number };
-type Message = { id:number; name:string; email:string; subject:string; message:string; created_at:number };
 type Notice = { type:'success'|'error'; message:string } | null;
 
-export function AdminProjectForm({ initialProjects, initialMessages }: { initialProjects:Project[]; initialMessages:Message[] }) {
+export function AdminProjectForm({ initialProjects }: { initialProjects:Project[] }) {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [editing, setEditing] = useState<Project | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -22,9 +20,8 @@ export function AdminProjectForm({ initialProjects, initialMessages }: { initial
   const [notice, setNotice] = useState<Notice>(null);
 
   async function refresh() {
-    const [projectResponse, messageResponse] = await Promise.all([fetch('/api/projects'), fetch('/api/contact')]);
+    const projectResponse = await fetch('/api/projects');
     if (projectResponse.ok) setProjects(((await projectResponse.json()) as { projects:Project[] }).projects);
-    if (messageResponse.ok) setMessages(((await messageResponse.json()) as { messages:Message[] }).messages);
   }
 
   useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl); }, [previewUrl]);
@@ -70,7 +67,7 @@ export function AdminProjectForm({ initialProjects, initialMessages }: { initial
   const imageSrc = previewUrl ?? editing?.imageUrl;
   return (
     <main className="admin-page"><div className="admin-shell">
-      <header className="admin-header"><a href="/" className="admin-back"><ArrowLeft size={17}/> Portfolio</a><span className="admin-badge">Owner workspace</span></header>
+      <header className="admin-header"><a href="/" className="admin-back"><ArrowLeft size={17}/> Portfolio</a><div className="admin-header-actions"><span className="admin-badge">Owner workspace</span><form action="/api/admin/logout" method="post"><button className="admin-logout" type="submit">Sign out</button></form></div></header>
       <section className="admin-intro"><p>Portfolio manager</p><h1>{editing ? 'Edit project' : 'Add a project'}</h1><span>Create stronger case studies, update links, and control the order visitors see.</span></section>
 
       <form className="admin-form" onSubmit={submitProject} key={editing?.id ?? 'new'}>
@@ -97,7 +94,6 @@ export function AdminProjectForm({ initialProjects, initialMessages }: { initial
 
       <section className="admin-library"><div className="admin-section-heading"><div><p>Published work</p><h2>Projects</h2></div><span>Use arrows to reorder</span></div><div className="admin-project-list">{projects.map((project,index) => <article key={project.id}><img src={project.imageUrl} alt=""/><div><small>{project.category} · {project.year}</small><strong>{project.title}</strong></div><div className="admin-project-actions"><Button size="icon" variant="outline" aria-label={`Move ${project.title} up`} disabled={index===0} onClick={() => moveProject(index,-1)}><ArrowUp/></Button><Button size="icon" variant="outline" aria-label={`Move ${project.title} down`} disabled={index===projects.length-1} onClick={() => moveProject(index,1)}><ArrowDown/></Button><Button size="icon" variant="outline" aria-label={`Edit ${project.title}`} onClick={() => { setEditing(project); setPreviewUrl(null); window.scrollTo({top:0,behavior:'smooth'}); }}><Pencil/></Button><Button size="icon" variant="outline" aria-label={`Delete ${project.title}`} onClick={() => setDeleteTarget(project)}><Trash2/></Button></div></article>)}</div></section>
 
-      <section className="admin-library"><div className="admin-section-heading"><div><p>Contact form</p><h2>Messages</h2></div><span>{messages.length} received</span></div><div className="admin-message-list">{messages.length ? messages.map((item) => <article key={item.id}><div><strong>{item.subject}</strong><span>{item.name} · <a href={`mailto:${item.email}`}>{item.email}</a></span></div><p>{item.message}</p><time>{new Date(item.created_at).toLocaleString()}</time></article>) : <p className="admin-empty">New portfolio messages will appear here.</p>}</div></section>
     </div>
 
     <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Delete “{deleteTarget?.title}”?</AlertDialogTitle><AlertDialogDescription>This removes the project from your public portfolio. This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={removeProject} className="admin-delete-confirm">Delete project</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
