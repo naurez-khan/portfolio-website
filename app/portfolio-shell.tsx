@@ -117,7 +117,7 @@ export function PortfolioShell() {
             <img src="/naurez.webp" alt="Muhammad Naurez Khan" width="600" height="800" />
           </div>
           <h1>Muhammad<br />Naurez Khan</h1>
-          <p className="role">Artificial Intelligence student</p>
+          <p className="role">Full Stack Web Developer</p>
 
           <div className="sidebar-details">
             <div><span className="detail-icon peach"><Mail size={17} /></span><p><small>Email</small><strong title="dev.naurez@gmail.com">dev.naurez@gmail.com</strong></p></div>
