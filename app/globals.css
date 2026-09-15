@@ -146,22 +146,22 @@ button, input, textarea { font: inherit; }
 .tab-bar button::after { content: ''; position: absolute; right: 16px; bottom: 0; left: 16px; height: 4px; border-radius: 999px 999px 0 0; background: var(--mint); transform: scaleX(0); transform-origin: center; transition: transform .28s cubic-bezier(.2,.75,.25,1); }
 .tab-bar button[data-state='active']::after { transform: scaleX(1); }
 
-.reveal-on-scroll { opacity: 0; transform: translateY(24px); transition: opacity .55s ease, transform .55s cubic-bezier(.2,.75,.25,1); }
+.reveal-on-scroll { opacity: 1; transform: translateY(0); transition: opacity .55s ease, transform .55s cubic-bezier(.2,.75,.25,1); }
 .reveal-on-scroll.is-visible, .tab-content[data-state='active'] .reveal-on-scroll { opacity: 1; transform: translateY(0); }
 .portfolio-card { transition-property: opacity, transform, box-shadow; transition-duration: .55s, .55s, .28s; transition-timing-function: ease, cubic-bezier(.2,.75,.25,1), ease; will-change: transform; }
 .portfolio-card.is-visible:hover { transform: translateY(-6px); box-shadow: 7px 9px 0 rgba(31,31,29,.13); }
 .project-image-wrap img { transition: transform .55s cubic-bezier(.2,.75,.25,1); }
 .portfolio-card:hover .project-image-wrap img { transform: scale(1.035); }
-.portfolio-card .project-info li { opacity: 0; transform: translateY(5px); transition: opacity .3s ease, transform .3s ease; }
+.portfolio-card .project-info li { opacity: 1; transform: translateY(0); transition: opacity .3s ease, transform .3s ease; }
 .portfolio-card.is-visible .project-info li, .tab-content[data-state='active'] .portfolio-card .project-info li { opacity: 1; transform: translateY(0); }
 .portfolio-card.is-visible .project-info li:nth-child(1), .tab-content[data-state='active'] .portfolio-card .project-info li:nth-child(1) { transition-delay: .22s; }.portfolio-card.is-visible .project-info li:nth-child(2), .tab-content[data-state='active'] .portfolio-card .project-info li:nth-child(2) { transition-delay: .28s; }.portfolio-card.is-visible .project-info li:nth-child(3), .tab-content[data-state='active'] .portfolio-card .project-info li:nth-child(3) { transition-delay: .34s; }.portfolio-card.is-visible .project-info li:nth-child(4), .tab-content[data-state='active'] .portfolio-card .project-info li:nth-child(4) { transition-delay: .4s; }
 .project-links a svg { transition: transform .22s ease; }
 .project-links a:hover svg { transform: translate(2px,-2px); }
 
 .motion-timeline { border-left: 0; }
-.motion-timeline::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 1px; background: var(--ink); transform: scaleY(0); transform-origin: top; transition: transform .75s .15s cubic-bezier(.2,.75,.25,1); }
+.motion-timeline::before { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 1px; background: var(--ink); transform: scaleY(1); transform-origin: top; transition: transform .75s .15s cubic-bezier(.2,.75,.25,1); }
 .motion-timeline.is-visible::before, .tab-content[data-state='active'] .motion-timeline::before { transform: scaleY(1); }
-.motion-timeline article { opacity: 0; transform: translateX(-10px); transition: opacity .42s ease, transform .42s ease; }
+.motion-timeline article { opacity: 1; transform: translateX(0); transition: opacity .42s ease, transform .42s ease; }
 .motion-timeline.is-visible article, .tab-content[data-state='active'] .motion-timeline article { opacity: 1; transform: translateX(0); }
 .motion-timeline.is-visible article:nth-child(1), .tab-content[data-state='active'] .motion-timeline article:nth-child(1) { transition-delay: .2s; }.motion-timeline.is-visible article:nth-child(2), .tab-content[data-state='active'] .motion-timeline article:nth-child(2) { transition-delay: .3s; }.motion-timeline.is-visible article:nth-child(3), .tab-content[data-state='active'] .motion-timeline article:nth-child(3) { transition-delay: .4s; }.motion-timeline.is-visible article:nth-child(4), .tab-content[data-state='active'] .motion-timeline article:nth-child(4) { transition-delay: .5s; }
 
