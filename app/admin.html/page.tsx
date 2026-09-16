@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { redirect } from 'next/navigation';
 import { requireAdmin } from '@/app/admin-auth';
 import { AdminProjectForm } from '@/app/admin/project-form';
@@ -12,10 +11,7 @@ export const metadata: Metadata = {
 
 export default async function AdminPage() {
   const allowed = await requireAdmin();
-  if (!allowed) {
-    if (process.env.ADMIN_PASSWORD) redirect('/admin-login?return_to=%2Fadmin.html');
-    notFound();
-  }
+  if (!allowed) redirect('/admin-login?return_to=%2Fadmin.html');
 
   return <AdminProjectForm initialProjects={await listStoredProjects()} />;
 }
